@@ -4,6 +4,7 @@
 1. [Git 환경 설정 및 저장소 초기화](#1-git-환경-설정-및-저장소-초기화)
 	- [패키지 설치 및 사용자 정보 설정](#패키지-설치-및-사용자-정보-설정)
 	- [저장소 초기화 및 상태 확인](#저장소-초기화-및-상태-확인)
+	- [원격 저장소 복제 (Git Clone)](#원격-저장소-복제-git-clone)
 2. [파일 추적 및 커밋 관리](#2-파일-추적-및-커밋-관리)
 	- [스테이징 영역 추가 및 관리](#스테이징-영역-추가-및-관리)
 	- [커밋 생성 및 이력 조회](#커밋-생성-및-이력-조회)
@@ -12,7 +13,8 @@
 	- [브랜치 전환 및 병합](#브랜치-전환-및-병합)
 4. [원격 저장소 연동 및 동기화](#4-원격-저장소-연동-및-동기화)
 	- [원격 저장소 연결 및 설정](#원격-저장소-연결-및-설정)
-	- [코드 업로드 및 다운로드](#코드-업로드-및-다운로드)
+	- [작업 브랜치 업로드 및 Upstream 설정](#작업-브랜치-업로드-및-upstream-설정)
+	- [코드 다운로드 및 동기화](#코드-다운로드-및-동기화)
 
 ---
 
@@ -20,37 +22,53 @@
 
 ### 패키지 설치 및 사용자 정보 설정
 
-Git을 사용하기 위해서는 시스템에 **Git 패키지**를 설치한 후 작성자 정보를 설정해야 합니다. 설정된 **사용자 이름**과 **이메일 주소**는 커밋 이력의 작성자 정보로 기록됩니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `yum -y install git` | 패키지 관리자를 통한 **Git 설치**를 진행합니다.<br>`git-core` 패키지로 설치할 수도 있습니다. |
-| `git config --global user.name <이름>` | 전역 **사용자 이름**을 설정합니다. |
-| `git config --global user.email <이메일>` | 전역 **사용자 이메일**을 설정합니다.<br>원격 저장소 계정과 동일하게 설정합니다. |
-| `git config --list` | 현재 적용된 전체 **Git 설정 목록**을 출력합니다. |
-| `cat ~/.gitconfig` | 사용자 홈 디렉터리에 저장된 **전역 설정 파일**의 내용을 확인합니다. |
+| `yum -y install git` | 패키지 관리자를 통해 **Git**을 시스템에 설치합니다.<br>경량화된 설치가 필요한 경우 `git-core` 패키지를 지정할 수 있습니다. |
+| `git config --global user.name <이름>` | 전역 **사용자 이름**을 설정합니다.<br>모든 커밋 작성자 정보에 표시됩니다. |
+| `git config --global user.email <이메일>` | 전역 **사용자 이메일**을 설정합니다.<br>원격 저장소 계정과 일치하도록 설정합니다. |
+| `git config --global core.editor <에디터>` | 커밋 메시지 작성 시 사용할 **기본 텍스트 에디터**를 지정합니다. |
+| `git config --global init.defaultBranch <이름>` | `git init` 실행 시 생성되는 **기본 브랜치 이름**을 지정합니다. |
+| `git config --list` | 현재 적용된 모든 **Git 설정 항목**을 조회합니다. |
+| `git config --get <키>` | 특정 설정 키에 대한 **설정값만 단독 조회**합니다. |
+| `cat ~/.gitconfig` | 사용자 홈 디렉터리의 **전역 설정 파일 내용**을 직접 확인합니다. |
 
 ### 자주 사용되는 예제
-- `git config --global user.name "Your_Name"`
-- `git config --global user.email "Your_Email@gmail.com"`
-- `git config --list`
-- `cat ~/.gitconfig`
+- git config --global user.name "User_Name"
+- git config --global user.email "User_Email@gmail.com"
+- git config --global init.defaultBranch main
+- git config --list
+- cat ~/.gitconfig
 
 ### 저장소 초기화 및 상태 확인
 
-디렉터리를 Git으로 관리하기 위해서는 **로컬 저장소 초기화** 작업이 필요합니다. 초기화가 완료되면 내부 관리용 **.git 숨김 디렉터리**가 생성됩니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git init` | 현재 작업 디렉터리를 **Git 로컬 저장소**로 초기화합니다. |
-| `git status` | **작업 디렉터리**와 **스테이징 영역**의 파일 상태를 확인합니다. |
-| `git status -s` | 파일 상태를 **요약된 형태**로 간결하게 출력합니다. |
-| `tree .git` | 생성된 **.git 내부 구조**를 트리 형태로 확인합니다. |
+| `git init` | 현재 작업 디렉터리를 **Git 로컬 저장소**로 초기화합니다.<br>실행 시 관리용 `.git` 숨김 디렉터리가 생성됩니다. |
+| `git status` | **작업 디렉터리**와 **스테이징 영역**의 변경 상태를 상세 조회합니다. |
+| `git status -s` | 파일 변경 상태를 **요약된 형태(Short Format)**로 간결하게 출력합니다. |
+| `git status -b` | 요약 출력 시 현재 **브랜치 및 Upstream 상태 정보**를 함께 표시합니다. |
+| `tree .git` | 생성된 `.git` 디렉터리의 **내부 구조 및 메타데이터 파일**을 트리 형태로 출력합니다. |
 
 ### 자주 사용되는 예제
-- `git init`
-- `git status`
-- `tree .git`
+- git init
+- git status
+- git status -s
+- tree .git
+
+### 원격 저장소 복제 (Git Clone)
+
+| 명령어 / 옵션 | 기능 및 상세 설명 |
+| --- | --- |
+| `git clone <URL>` | 원격 저장소의 전체 커밋 이력과 프로젝트 파일들을 내 컴퓨터로 **복제**합니다.<br>로컬 저장소 초기화 및 원격 연결(`origin`)이 자동으로 수행됩니다. |
+| `git clone <URL> <디렉터리명>` | 지정한 **새 디렉터리 이름**으로 프로젝트를 복제하여 저장합니다. |
+| `git clone -b <브랜치명> <URL>` | 원격 저장소의 특정 **단일 브랜치**만 지정하여 복제합니다. |
+| `git clone --depth <개수> <URL>` | 최근 커밋 이력을 **지정한 개수만큼만 가져오는 얕은 복제(Shallow Clone)**를 수행합니다. |
+
+### 자주 사용되는 예제
+- git clone https://github.com/GitHub_Name/Repository_Name.git
+- git clone -b feature/login https://github.com/GitHub_Name/Repository_Name.git
+- cd Repository_Name
 
 ---
 
@@ -58,35 +76,43 @@ Git을 사용하기 위해서는 시스템에 **Git 패키지**를 설치한 후
 
 ### 스테이징 영역 추가 및 관리
 
-파일의 변경 사항을 커밋하기 전 **스테이징 영역(Staging Area/Index)**에 올려 관리 대상으로 지정합니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git add <파일명>` | 지정한 특정 파일을 **스테이징 영역**에 추가합니다. |
-| `git add .` | 현재 디렉터리의 모든 변경 사항을 **스테이징 영역**에 추가합니다. |
-| `git add -A` | 작업 공간 내의 모든 변경 및 삭제된 파일을 **스테이징 영역**에 일괄 추가합니다. |
-| `git rm --cached <파일명>` | 스테이징 영역에서 파일을 제거하고 **추적 대상에서 제외**합니다. |
+| `git add <파일명>` | 지정한 특정 파일의 변경 사항을 **스테이징 영역**에 추가합니다. |
+| `git add .` | 현재 디렉터리 및 하위 디렉터리의 모든 변경 사항을 **스테이징 영역**에 추가합니다. |
+| `git add -A` | 작업 공간 전체의 생성, 수정, 삭제된 모든 파일을 **스테이징 영역**에 일괄 추가합니다. |
+| `git add -u` | 기존에 **추적 중인 파일의 변경 및 삭제 사항**만 스테이징 영역에 반영합니다. |
+| `git add -p` | 파일의 변경 내용을 **대화형 덩어리(Patch) 단위**로 확인하며 선택적으로 스테이징합니다. |
+| `git rm --cached <파일명>` | 파일을 로컬 디렉터리에는 유지하고 **스테이징 영역 및 추적 대상에서만 제거**합니다. |
+| `git restore --staged <파일명>` | 스테이징 영역에 올라간 파일을 **언스테이징(Unstage)** 상태로 되돌립니다. |
 
 ### 자주 사용되는 예제
-- `git add README.md`
-- `git add .`
-- `git add -A`
+- git add README.md
+- git add .
+- git add -A
+- git rm --cached secrets.txt
+- git restore --staged README.md
 
 ### 커밋 생성 및 이력 조회
 
-스테이징 영역에 등록된 파일 변경 건을 하나의 단위로 묶어 **로컬 저장소**에 기록합니다. **커밋 메시지**를 작성하여 변경 목적을 명시해야 합니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git commit -m "<메시지>"` | 스테이징된 변경 사항을 지정한 **커밋 메시지**와 함께 기록합니다. |
-| `git commit -am "<메시지>"` | 추적 중인 파일의 변경 사항을 **자동 스테이징 및 커밋**을 동시에 수행합니다. |
-| `git log` | 저장소의 전체 **커밋 이력**을 상세하게 조회합니다. |
-| `git log --oneline` | 커밋 이력을 **한 줄로 간결하게** 출력합니다. |
-| `git log --graph` | **브랜치 및 병합 흐름**을 시각적 그래프로 표시합니다. |
+| `git commit -m "<메시지>"` | 스테이징된 변경 사항을 지정한 **커밋 메시지**와 함께 로컬 저장소에 기록합니다. |
+| `git commit -am "<메시지>"` | 추적 중인 파일의 변경 사항을 **자동 스테이징 후 커밋**합니다. |
+| `git commit --amend` | **직전 커밋을 수정**하거나 커밋 메시지를 변경합니다.<br>추가된 스테이징 내역을 기존 커밋에 병합합니다. |
+| `git log` | 저장소의 **전체 커밋 이력**을 상세하게 출력합니다. |
+| `git log --oneline` | 커밋 해시와 메시지를 **한 줄로 간결하게 요약**하여 출력합니다. |
+| `git log --graph` | 브랜치 분기와 병합 흐름을 **ASCII 그래픽 형태**로 출력합니다. |
+| `git log --all` | 현재 브랜치뿐만 아니라 **모든 브랜치의 커밋 이력**을 함께 출력합니다. |
+| `git log -n <숫자>` | 최신 커밋부터 **지정한 개수만큼의 이력만 출력**합니다. |
+| `git log --stat` | 각 커밋별로 **변경된 파일 및 라인 수 통계**를 포함하여 출력합니다. |
 
 ### 자주 사용되는 예제
-- `git commit -m "first commit"`
-- `git log --oneline`
+- git commit -m "first commit"
+- git commit -m "2nd commit"
+- git commit --amend -m "docs: README.md 수정"
+- git log --oneline --graph --all
+- git log -n 5
 
 ---
 
@@ -94,36 +120,43 @@ Git을 사용하기 위해서는 시스템에 **Git 패키지**를 설치한 후
 
 ### 브랜치 조회 및 생성
 
-**브랜치(Branch)**는 독립적으로 작업을 진행할 수 있는 분기점입니다. 기본 생성되는 브랜치명을 변경하거나 목적에 맞는 새 브랜치를 생성하여 관리합니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git branch` | 현재 로컬에 존재하는 **브랜치 목록**을 조회합니다. |
-| `git branch -v` | 각 브랜치의 **최신 커밋 정보**를 함께 조회합니다. |
-| `git branch <브랜치명>` | 지정한 이름으로 **새로운 브랜치**를 생성합니다. |
-| `git branch -M <새 브랜치명>` | 현재 브랜치의 이름을 **강제로 변경**합니다.<br>(예: `master` -> `main`) |
-| `git branch -d <브랜치명>` | 작업이 완료된 **브랜치를 삭제**합니다. |
+| `git branch` | 현재 로컬 저장소에 존재하는 **브랜치 목록**을 조회합니다. |
+| `git branch -v` | 각 브랜치의 **최신 커밋 해시 및 메시지**를 포함하여 상세 조회합니다. |
+| `git branch -a` | 로컬 및 원격 추적 브랜치를 포함한 **모든 브랜치**를 조회합니다. |
+| `git branch -r` | **원격 저장소의 브랜치 목록만** 필터링하여 조회합니다. |
+| `git branch <브랜치명>` | 현재 작업 중인 커밋을 기준으로 **새로운 브랜치**를 생성합니다. |
+| `git branch -M <새 이름>` | 현재 위치한 브랜치의 이름을 **강제로 변경**합니다. |
+| `git branch -d <브랜치명>` | 병합이 완료된 **안전한 브랜치를 삭제**합니다. |
+| `git branch -D <브랜치명>` | 병합 여부와 상관없이 **브랜치를 강제 삭제**합니다. |
 
 ### 자주 사용되는 예제
-- `git branch`
-- `git branch -v`
-- `git branch -M main`
+- git branch
+- git branch -v
+- git branch -a
+- git branch -M main
+- git branch feature/login
+- git branch -d feature/login
 
 ### 브랜치 전환 및 병합
 
-작업할 **브랜치를 전환**하거나 다른 브랜치에서 완료된 작업 내역을 **기본 브랜치로 병합**합니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git switch <브랜치명>` | 지정한 **브랜치로 전환**합니다. |
-| `git switch -c <브랜치명>` | 새로운 브랜치를 **생성함과 동시에 전환**합니다. |
-| `git checkout <브랜치명>` | 지정한 **브랜치로 전환**합니다.<br>(이전 버전 표준 명령어) |
-| `git merge <브랜치명>` | 지정한 브랜치의 변경 사항을 현재 브랜치로 **병합**합니다. |
+| `git switch <브랜치명>` | 작업 공간을 지정한 **브랜치로 전환**합니다. |
+| `git switch -c <브랜치명>` | 새로운 브랜치를 **생성함과 동시에 해당 브랜치로 전환**합니다. |
+| `git checkout <브랜치명>` | 지정한 **브랜치로 전환**합니다. |
+| `git checkout -b <브랜치명>` | 새로운 브랜치를 **생성하고 전환**합니다. |
+| `git merge <브랜치명>` | 지정한 브랜치의 변경 이력을 **현재 위치한 브랜치로 병합**합니다. |
+| `git merge --no-ff <브랜치명>` | Fast-Forward 관계이더라도 **명시적인 병합 커밋(Merge Commit)**을 생성합니다. |
+| `git merge --abort` | 병합 과정에서 충돌이 발생했을 때 **병합 작업을 취소**하고 이전 상태로 되돌립니다. |
 
 ### 자주 사용되는 예제
-- `git switch main`
-- `git switch -c feature/login`
-- `git merge feature/login`
+- git switch main
+- git switch -c feature/login
+- git merge feature/login
+- git merge --no-ff feature/login
+- git merge --abort
 
 ---
 
@@ -131,32 +164,50 @@ Git을 사용하기 위해서는 시스템에 **Git 패키지**를 설치한 후
 
 ### 원격 저장소 연결 및 설정
 
-GitHub 등 **원격 저장소(Remote Repository)**와 로컬 저장소를 연결하고 관리하는 설정 과정입니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git remote add <별칭> <URL>` | 로컬 저장소에 **원격 저장소 URL**을 연결합니다.<br>기본 별칭은 `origin`을 주로 사용합니다. |
-| `git remote -v` | 연결된 **원격 저장소의 상세 목록**과 URL을 조회합니다. |
+| `git remote add <별칭> <URL>` | 로컬 저장소에 **원격 저장소 URL**을 연결합니다.<br>기본 원격지 별칭으로 `origin`을 주로 사용합니다. |
+| `git remote -v` | 연결된 원격 저장소의 **별칭과 단방향 URL**을 조회합니다. |
+| `git remote show <별칭>` | 지정한 원격 저장소의 **상세 정보 및 추적 브랜치 상태**를 확인합니다. |
 | `git remote remove <별칭>` | 지정한 **원격 저장소 연결을 해제**합니다. |
-| `git remote set-url <별칭> <신규 URL>` | 기존 원격 저장소의 **접속 URL을 변경**합니다. |
+| `git remote rename <구별칭> <신별칭>` | 원격 저장소의 **별칭 이름을 변경**합니다. |
+| `git remote set-url <별칭> <신규 URL>` | 기존 원격 저장소의 **접속 URL을 새로운 주소로 변경**합니다. |
 
 ### 자주 사용되는 예제
-- `git remote add origin https://github.com/Your_ID/Repository_Name.git`
-- `git remote -v`
+- git remote add origin https://github.com/GitHub_Name/Repository_Name.git
+- git remote -v
+- git remote show origin
+- git remote set-url origin https://github.com/GitHub_Name/New_Repository_Name.git
 
-### 코드 업로드 및 다운로드
+### 작업 브랜치 업로드 및 Upstream 설정
 
-로컬에서 작업한 커밋을 **원격 저장소로 업로드(Push)**하거나, 원격 저장소의 최신 변경 사항을 **로컬 저장소로 다운로드(Pull/Fetch)**합니다.
-
-| 명령어 / 옵션 | 기능 및 설명 |
+| 명령어 / 옵션 | 기능 및 상세 설명 |
 | --- | --- |
-| `git push -u <원격지> <브랜치>` | 로컬 브랜치 커밋을 원격 저장소로 **업로드**합니다.<br>`-u` 옵션으로 상향 추적(Upstream)을 설정합니다. |
-| `git push <원격지> <브랜치>` | 업스트림이 설정된 상태에서 커밋을 **원격 저장소로 업로드**합니다. |
-| `git pull <원격지> <브랜치>` | 원격 저장소의 최신 변경 사항을 가져와 **현재 브랜치와 병합**합니다. |
-| `git fetch <원격지>` | 원격 저장소의 변경 사항을 가져오되 **병합은 수행하지 않습니다**. |
+| `git push -u <원격지> <브랜치>` | 로컬 브랜치를 원격지에 푸시하며 **Upstream 관계를 설정**합니다.<br>원격 저장소에 해당 브랜치가 없으면 **자동으로 새로 생성**됩니다. |
+| `git push <원격지> <브랜치>` | 지정한 원격 저장소의 **특정 브랜치로 커밋을 업로드**합니다. |
+| `git push` | Upstream이 설정된 상태에서 **현재 연결된 원격 브랜치로 자동 푸시**합니다. |
+| `git push <원격지> --delete <브랜치>` | 원격 저장소에 존재하는 **원격 브랜치를 삭제**합니다. |
+| `git push --force-with-lease` | 안전성을 검증하며 원격 저장소의 커밋 이력을 **강제로 덮어씁니다**. |
 
 ### 자주 사용되는 예제
-- `git push -u origin main`
-- `git push origin main`
-- `git pull origin main`
-- `git fetch origin`
+- git push -u origin main
+- git push -u origin feature/login
+- git push
+- git push origin --delete feature/login
+
+### 코드 다운로드 및 동기화
+
+| 명령어 / 옵션 | 기능 및 상세 설명 |
+| --- | --- |
+| `git pull <원격지> <브랜치>` | 원격 저장소의 최신 변경 사항을 가져와 **현재 로컬 브랜치와 병합**합니다. |
+| `git pull --rebase` | 원격 저장소의 변경 사항을 가져올 때 병합 커밋 대신 **Rebase 방식으로 정렬**합니다. |
+| `git fetch <원격지>` | 원격 저장소의 최신 커밋 이력 및 브랜치 정보를 가져오되 **로컬 코드와 병합하지 않습니다**. |
+| `git fetch --all` | 등록된 **모든 원격 저장소의 최신 정보**를 가져옵니다. |
+| `git fetch --prune` | 원격 저장소에서 이미 삭제된 브랜치의 **로컬 추적 가지를 정리**합니다. |
+
+### 자주 사용되는 예제
+- git pull origin main
+- git pull origin feature/login
+- git pull --rebase origin main
+- git fetch origin
+- git fetch --prune
